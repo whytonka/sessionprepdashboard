@@ -1,0 +1,454 @@
+<!-- Session Prep Dashboard — editable -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0f14; --panel:#12161d; --panel2:#161b23; --line:#222a34;
+    --txt:#d6dde6; --dim:#7d8893; --faint:#4d5660;
+    --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+    --low:#3ecf8e; --med:#e6c14b; --high:#ec8b3c; --crit:#e8584f; --queued:#5b6470;
+    --accent:#5aa6ff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--txt); font-family:var(--sans);
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:46px 46px; background-position:-1px -1px;
+    padding:22px; font-size:14px; line-height:1.45;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-family:var(--mono);font-size:20px;letter-spacing:.5px;margin:0;font-weight:600}
+  h2{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:0 0 10px;font-weight:600}
+  .mono{font-family:var(--mono)}
+
+  [contenteditable]{outline:none;border-radius:3px;transition:background .12s}
+  [contenteditable]:hover{box-shadow:inset 0 -1px 0 var(--faint)}
+  [contenteditable]:focus{background:var(--panel2);box-shadow:inset 0 0 0 1px var(--accent)}
+
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:20px}
+  .hl{display:flex;align-items:baseline;gap:14px}
+  .tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:1px}
+  .metrics{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+  .metric .v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--txt)}
+  .metric .v.warn{color:var(--high)}
+  .metric .l{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+
+  .btn{font-family:var(--mono);font-size:11px;background:transparent;border:1px solid var(--line);color:var(--dim);padding:6px 11px;border-radius:5px;cursor:pointer;transition:.12s;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.danger:hover{border-color:var(--crit);color:var(--crit)}
+  .btn.solid{background:var(--accent);border-color:var(--accent);color:#06101e;font-weight:600}
+  .btn.solid:hover{filter:brightness(1.08)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+  @media(max-width:820px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+  .panel-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .panel-h h2{margin:0}
+  .focus-line{font-size:14px;color:var(--txt);line-height:1.55}
+  .focus-line b{color:var(--accent);font-weight:600}
+  .week-row{display:flex;gap:10px;font-family:var(--mono);font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line);align-items:baseline}
+  .week-row:last-child{border-bottom:none}
+  .week-row .d{color:var(--accent);min-width:84px;font-weight:600;flex:0 0 auto}
+  .week-row .wt{flex:1}
+  .x{color:var(--faint);cursor:pointer;font-family:var(--mono);font-size:13px;padding:0 4px;flex:0 0 auto;opacity:0;transition:.12s}
+  .week-row:hover .x,ul.chk li:hover .x{opacity:1}
+  .x:hover{color:var(--crit)}
+  .addrow{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;margin-top:8px;display:inline-block;opacity:.85}
+  .addrow:hover{opacity:1}
+
+  ul.chk{list-style:none;padding:0;margin:0}
+  ul.chk li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  ul.chk li:last-child{border-bottom:none}
+  ul.chk input.cb{appearance:none;-webkit-appearance:none;width:17px;height:17px;border:1.5px solid var(--faint);border-radius:4px;margin-top:1px;cursor:pointer;flex:0 0 auto;position:relative;background:transparent}
+  ul.chk input.cb:checked{background:var(--low);border-color:var(--low)}
+  ul.chk input.cb:checked::after{content:"✓";position:absolute;color:#0c0f14;font-size:12px;font-weight:700;left:2.5px;top:-1px}
+  ul.chk label{cursor:text;flex:1}
+  ul.chk .pill{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:3px;padding:1px 6px;margin-right:7px;white-space:nowrap;min-width:18px;text-align:center}
+  ul.chk li.done label{color:var(--faint);text-decoration:line-through}
+
+  .tablewrap{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);text-align:left;padding:11px 12px;background:var(--panel2);border-bottom:1px solid var(--line);font-weight:600}
+  tbody tr.main{border-bottom:1px solid var(--line);cursor:pointer}
+  tbody tr.main:hover{background:var(--panel2)}
+  tbody td{padding:11px 12px;vertical-align:middle}
+  .subj{font-weight:600;display:flex;align-items:center;gap:8px}
+  .caret{color:var(--faint);font-family:var(--mono);font-size:10px;transition:transform .15s;display:inline-block}
+  tr.main.open .caret{transform:rotate(90deg)}
+  .exam{font-family:var(--mono);font-size:12px;white-space:nowrap}
+  .examtype{font-family:var(--mono);font-size:9px;letter-spacing:.5px;color:var(--faint);display:block;text-transform:uppercase}
+  .cd{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  select.status{font-family:var(--mono);font-size:11px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:4px;padding:4px 6px;cursor:pointer;max-width:120px}
+  .bar{height:7px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;overflow:hidden;min-width:90px}
+  .bar i{display:block;height:100%;border-radius:20px;transition:width .25s}
+  .pct{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:3px;display:block}
+  .risk{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 8px;border-radius:4px;white-space:nowrap}
+  .risk.LOW{color:var(--low);background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3)}
+  .risk.MED{color:var(--med);background:rgba(230,193,75,.1);border:1px solid rgba(230,193,75,.3)}
+  .risk.HIGH{color:var(--high);background:rgba(236,139,60,.1);border:1px solid rgba(236,139,60,.3)}
+  .risk.CRITICAL{color:var(--crit);background:rgba(232,88,79,.12);border:1px solid rgba(232,88,79,.35)}
+  .risk.QUEUED{color:var(--queued);background:rgba(91,100,112,.12);border:1px solid var(--line)}
+  .risk.DONE{color:var(--faint);background:transparent;border:1px solid var(--line)}
+  .next{font-size:12.5px;color:var(--dim);max-width:240px}
+  tr.detail td{padding:0;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .detail-inner{padding:14px 18px 16px 40px;display:none}
+  tr.detail.open .detail-inner{display:block}
+  .detail-inner .na{font-family:var(--mono);font-size:11px;color:var(--high);margin-bottom:10px}
+  .detail-inner .na b{color:var(--dim)}
+  .detail-actions{margin-top:12px;display:flex;gap:8px}
+
+  .queued-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .qcard{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--queued);border-radius:6px;padding:12px;position:relative}
+  .qcard .qn{font-weight:600;margin-bottom:4px;padding-right:44px}
+  .qcard .qe{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .qcard .qu{font-family:var(--mono);font-size:10px;color:var(--high);margin-top:8px;letter-spacing:.5px}
+  .qcard .qedit{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+  .qcard .iconbtn{font-family:var(--mono);font-size:11px;color:var(--faint);cursor:pointer;border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:transparent}
+  .qcard .iconbtn:hover{color:var(--accent);border-color:var(--accent)}
+  .note{font-size:12px;color:var(--faint);margin-top:8px;font-family:var(--mono)}
+  .section-h{display:flex;justify-content:space-between;align-items:center;margin-top:24px;margin-bottom:12px}
+  .section-h h2{margin:0}
+  footer{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  .overlay{position:fixed;inset:0;background:rgba(6,9,13,.72);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+  .overlay.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:100%;max-width:560px;padding:22px}
+  .modal h3{font-family:var(--mono);font-size:14px;letter-spacing:.5px;margin:0 0 18px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+  .field input[type=text],.field input[type=date],.field input[type=time],.field input[type=number],.field select{
+    width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:8px 10px;font-family:var(--sans);font-size:13px}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+  .row3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .taskedit{display:flex;gap:8px;margin-bottom:7px;align-items:center}
+  .taskedit input{flex:1}
+  .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+  .modal-actions .right{display:flex;gap:8px}
+  .check-inline{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--dim);cursor:pointer}
+  .rangewrap{display:flex;align-items:center;gap:10px}
+  .rangewrap input[type=range]{flex:1}
+  .rangewrap span{font-family:var(--mono);font-size:12px;min-width:38px;text-align:right;color:var(--txt)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="hl"><h1 contenteditable id="title">SESSION PREP</h1><span class="tag" id="today">—</span></div>
+      <div class="tag" contenteditable id="subtitle" style="margin-top:4px">экзаменационная сессия · июнь 2026</div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="v" id="m-ready">—</div><div class="l">overall ready</div></div>
+      <div class="metric"><div class="v" id="m-next">—</div><div class="l" id="m-next-l">next exam</div></div>
+      <div class="metric"><div class="v warn" id="m-risk">—</div><div class="l">high-risk</div></div>
+      <button class="btn danger" id="reset">RESET</button>
+    </div>
+  </header>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Today’s focus</h2>
+      <div class="focus-line" contenteditable id="focusToday"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>This week focus</h2></div>
+      <div id="weekRows"></div>
+      <span class="addrow" id="weekAdd">+ строка</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Tasks — today · <span id="t-date-today" class="mono" style="color:var(--accent)"></span></h2>
+      <ul class="chk" id="today-list"></ul>
+      <span class="addrow" id="today-add">+ задача</span>
+    </div>
+    <div class="panel">
+      <h2>Tasks — tomorrow · <span id="t-date-tom" class="mono" style="color:var(--accent)"></span></h2>
+      <ul class="chk" id="tom-list"></ul>
+      <span class="addrow" id="tom-add">+ задача</span>
+    </div>
+  </div>
+
+  <div class="section-h"><h2>Subjects</h2><button class="btn solid" id="addSubject">+ Добавить предмет</button></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Subject</th><th>Exam</th><th>Countdown</th><th>Status</th><th>Progress</th><th>Risk</th><th>Next action</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="note">↳ Клик по строке — раскрыть задачи и кнопки правки. Прогресс считается из отмеченных задач.</div>
+
+  <div class="section-h"><h2>Do not touch yet</h2></div>
+  <div class="queued-grid" id="queued"></div>
+  <div class="note">Замороженные предметы. В правке предмета сними галочку «отложить», чтобы вернуть его в активные.</div>
+
+  <footer>
+    <span id="foot">LIVE · прогресс и структура сохраняются в этом браузере</span>
+    <span class="addrow" id="exportBtn">экспорт JSON</span>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Предмет</h3>
+    <div class="field"><label>Название</label><input type="text" id="f-name" placeholder="напр. Global Marketing"></div>
+    <div class="row3">
+      <div class="field"><label>Дата экзамена</label><input type="date" id="f-date"></div>
+      <div class="field"><label>Время</label><input type="time" id="f-time"></div>
+      <div class="field"><label>Тип</label><select id="f-type"><option>exam</option><option>zero term</option><option>retake</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Статус</label><select id="f-status"></select></div>
+      <div class="field"><label>Базовая готовность</label><div class="rangewrap"><input type="range" id="f-base" min="0" max="100" step="5"><span id="f-base-v">0%</span></div></div>
+    </div>
+    <div class="field"><label>Next action</label><input type="text" id="f-next" placeholder="что делать дальше"></div>
+    <div class="field"><label>Задачи</label><div id="f-tasks"></div><span class="addrow" id="f-task-add">+ задача</span></div>
+    <div class="field">
+      <label class="check-inline"><input type="checkbox" id="f-queued"> отложить (Do not touch yet)</label>
+      <input type="text" id="f-unlock" placeholder="когда открыть, напр. open 12.06" style="margin-top:8px;display:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="f-delete">Удалить</button>
+      <div class="right"><button class="btn" id="f-cancel">Отмена</button><button class="btn solid" id="f-save">Сохранить</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATUSES=["Not started","Started","In progress","Almost ready","Ready","Repeat only"];
+
+const DEFAULTS=[
+  {id:"intl",name:"Internationalization of the Firm",exam:"2026-06-08T17:00",type:"zero term",base:80,status:"Repeat only",queued:false,unlock:"",next:"Повторить ошибки пробников, модели и определения",tasks:["Повторить ошибки пробников","Повторить модели и фреймворки","Повторить определения","Прорешать вопросы прошлых лет ещё раз"]},
+  {id:"plis",name:"Polish — Listening",exam:"2026-06-08T10:00",type:"exam",base:88,status:"Almost ready",queued:false,unlock:"",next:"30 мин аудио + 3 открытых вопроса",tasks:["30 мин практики аудирования","3 открытых вопроса"]},
+  {id:"gmkt",name:"Global Marketing",exam:"2026-06-09T13:30",type:"zero term",base:50,status:"In progress",queued:false,unlock:"",next:"Лекции 10–13 + студенческие кейсы",tasks:["Лекция 10","Лекция 11","Лекция 12","Лекция 13","Студенческие кейсы / презентации","Финальное повторение"]},
+  {id:"bca",name:"BCA",exam:"2026-06-09T15:00",type:"zero term",base:80,status:"Almost ready",queued:false,unlock:"",next:"Короткое повторение + 20–30 тестовых вопросов",tasks:["Короткое повторение лекций","20–30 тестовых вопросов"]},
+  {id:"sust",name:"Sustainable Development",exam:"2026-06-10T11:40",type:"zero term",base:5,status:"Not started",queued:false,unlock:"",next:"Лекции по Парето → тесты → повторение 09.06 вечером",tasks:["Лекции по Парето","Остальные лекции","Тесты","Итоговое повторение (вечер 09.06)"]},
+  {id:"elis",name:"English — Listening",exam:"2026-06-11T12:00",type:"exam",base:5,status:"Not started",queued:false,unlock:"",next:"2–4 часа подготовки после 10.06",tasks:["Разбор формата","Практика аудио 1","Практика аудио 2","Пробник"]},
+  {id:"ipm",name:"International Project Management",exam:"2026-06-12T11:40",type:"zero term",base:5,status:"Not started",queued:false,unlock:"",next:"Ознакомительная сессия → основная подготовка 11.06",tasks:["Ознакомительная сессия (формат)","Основные лекции","Тесты / вопросы","Повторение"]},
+  {id:"ewri",name:"English — Writing",exam:"2026-06-15T12:00",type:"exam",base:10,status:"Started",queued:true,unlock:"open 12.06",next:"Прошлогодние письменные + writing templates",tasks:["Прошлогодние письменные экзамены","Writing templates","Практика эссе 1","Практика эссе 2"]},
+  {id:"pwri",name:"Polish — Written",exam:"2026-06-16T08:00",type:"exam",base:5,status:"Not started",queued:true,unlock:"open 12.06",next:"Типовые задания + письменная практика",tasks:["Типовые задания","Письменная практика 1","Письменная практика 2"]},
+  {id:"pspk",name:"Polish — Speaking",exam:"2026-06-17T12:00",type:"exam",base:20,status:"Started",queued:true,unlock:"open 12.06",next:"Темы + ответы + устная практика",tasks:["Темы для обсуждения","Ответы на типовые вопросы","Устная практика"]},
+  {id:"tlaw",name:"International Trade Law",exam:"2026-06-17T19:00",type:"exam",base:0,status:"Not started",queued:true,unlock:"open 12–13.06",next:"План подготовки после языков",tasks:["План подготовки","Основные темы / лекции","Кейсы / определения","Вопросы прошлых лет","Повторение"]},
+  {id:"espk",name:"English — Speaking",exam:"2026-06-18T12:00",type:"exam",base:20,status:"Started",queued:true,unlock:"open 12.06",next:"Mock speaking + fluency",tasks:["Ответы на типовые вопросы","Темы для обсуждения","2–3 mock speaking exam","Fluency и переходы"]}
+];
+const DEFAULT_FOCUS="Закрыть <b>Internationalization</b> (только повторение) и <b>Polish Listening</b> — оба экзамена завтра. Параллельно двигать лекции <b>Global Marketing</b>. Остального пока не касаться.";
+const DEFAULT_WEEK=[
+  {d:"08–10.06",t:"Ближний кластер: Internationalization → Polish Listening → Global Marketing → BCA → Sustainable Development"},
+  {d:"11.06",t:"English Listening (после Sustainable)"},
+  {d:"12.06",t:"International Project Management + открыть языки и Trade Law"},
+  {d:"15–18.06",t:"Writing → Polish Written → Speaking → Trade Law → English Speaking"}
+];
+const DEFAULT_TODAY=[
+  {tag:"INTL",text:"Прогнать ошибки пробников + модели + определения",done:false},
+  {tag:"INTL",text:"Решить вопросы прошлых лет ещё раз",done:false},
+  {tag:"PL",text:"30 мин аудирования + 3 открытых вопроса",done:false},
+  {tag:"GMKT",text:"Пройти лекции Global Marketing 10–11",done:false},
+  {tag:"BCA",text:"(опц.) Глянуть тестовые вопросы BCA",done:false}
+];
+const DEFAULT_TOM=[
+  {tag:"EXAM",text:"10:00 — экзамен Polish Listening",done:false},
+  {tag:"INTL",text:"До 17:00 — финальное повторение Internationalization",done:false},
+  {tag:"EXAM",text:"17:00 — экзамен Internationalization",done:false},
+  {tag:"GMKT",text:"Вечер — Global Marketing: лекции 12–13 + кейсы",done:false},
+  {tag:"BCA",text:"Вечер — BCA: 20–30 тестовых вопросов",done:false}
+];
+
+const now=new Date();
+let SUBJECTS=[],TODAY=[],TOM=[],WEEK=[],META={};
+const $=id=>document.getElementById(id);
+
+async function loadKey(key,fb){try{const r=await window.storage.get(key);return r?JSON.parse(r.value):fb;}catch(e){return fb;}}
+async function saveKey(key,v){try{await window.storage.set(key,JSON.stringify(v));}catch(e){console.error(e);}}
+const saveSubjects=()=>saveKey('study:subjects',SUBJECTS);
+const uid=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function progressOf(s){const total=s.tasks.length;if(!total)return s.base;const done=s.tasks.filter(t=>t.done).length;return Math.round(s.base+(done/total)*(100-s.base));}
+function daysTo(iso){return (new Date(iso)-now)/86400000;}
+function riskOf(s){if(s.queued)return"QUEUED";const d=daysTo(s.exam),p=progressOf(s);if(d<0||p>=99)return"DONE";const rate=(100-p)/Math.max(d,0.5);if(rate>=40)return"CRITICAL";if(rate>=20)return"HIGH";if(rate>=9)return"MED";return"LOW";}
+function barColor(p){return p>=85?"var(--low)":p>=55?"var(--med)":p>=25?"var(--high)":"var(--crit)";}
+function countdown(iso){const ms=new Date(iso)-now;if(ms<0)return"passed";const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000);return d>0?d+"d "+h+"h":h+"h "+Math.floor((ms%3600000)/60000)+"m";}
+const fmt=iso=>{const dt=new Date(iso);return dt.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+", "+dt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});};
+
+function renderTable(){
+  const tb=$('rows');tb.innerHTML="";
+  SUBJECTS.filter(s=>!s.queued).slice().sort((a,b)=>new Date(a.exam)-new Date(b.exam)).forEach(s=>{
+    const p=progressOf(s),r=riskOf(s);
+    const tr=document.createElement('tr');tr.className="main";
+    tr.innerHTML=`<td><div class="subj"><span class="caret">▶</span>${esc(s.name)}</div></td>
+      <td><span class="exam">${fmt(s.exam)}<span class="examtype">${esc(s.type)}</span></span></td>
+      <td><span class="cd">${countdown(s.exam)}</span></td>
+      <td><select class="status">${STATUSES.map(x=>`<option ${s.status===x?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td><div class="bar"><i style="width:${p}%;background:${barColor(p)}"></i></div><span class="pct">${p}%</span></td>
+      <td><span class="risk ${r}">${r}</span></td>
+      <td><span class="next">${esc(s.next)}</span></td>`;
+    const det=document.createElement('tr');det.className="detail";
+    det.innerHTML=`<td colspan="7"><div class="detail-inner">
+      <div class="na"><b>NEXT ACTION:</b> ${esc(s.next)}</div>
+      <ul class="chk">${s.tasks.map((t,i)=>`<li class="${t.done?'done':''}"><input class="cb" type="checkbox" data-i="${i}" ${t.done?'checked':''}><label>${esc(t.text)}</label></li>`).join('')}</ul>
+      <div class="detail-actions"><button class="btn editBtn">✎ Редактировать</button><button class="btn danger delBtn">Удалить</button></div></div></td>`;
+    tr.addEventListener('click',e=>{if(e.target.classList.contains('status'))return;tr.classList.toggle('open');det.classList.toggle('open');});
+    tr.querySelector('select.status').addEventListener('change',e=>{s.status=e.target.value;saveSubjects();});
+    det.querySelectorAll('input.cb').forEach(cb=>cb.addEventListener('change',e=>{
+      s.tasks[+e.target.dataset.i].done=e.target.checked;saveSubjects();
+      const li=e.target.closest('li');li.classList.toggle('done',e.target.checked);
+      const p2=progressOf(s);tr.querySelector('.bar i').style.width=p2+"%";tr.querySelector('.bar i').style.background=barColor(p2);
+      tr.querySelector('.pct').textContent=p2+"%";const r2=riskOf(s);const rb=tr.querySelector('.risk');rb.className="risk "+r2;rb.textContent=r2;
+      renderMetrics();
+    }));
+    det.querySelector('.editBtn').addEventListener('click',()=>openEditor(s.id));
+    det.querySelector('.delBtn').addEventListener('click',()=>{if(confirm('Удалить предмет «'+s.name+'»?')){SUBJECTS=SUBJECTS.filter(x=>x.id!==s.id);saveSubjects();renderAll();}});
+    tb.appendChild(tr);tb.appendChild(det);
+  });
+}
+
+function renderQueued(){
+  const g=$('queued');g.innerHTML="";
+  SUBJECTS.filter(s=>s.queued).slice().sort((a,b)=>new Date(a.exam)-new Date(b.exam)).forEach(s=>{
+    const d=document.createElement('div');d.className="qcard";
+    d.innerHTML=`<div class="qedit"><span class="iconbtn e">✎</span><span class="iconbtn x2">✕</span></div>
+      <div class="qn">${esc(s.name)}</div><div class="qe">exam ${fmt(s.exam)}</div>
+      <div style="margin-top:8px"><span class="risk QUEUED">QUEUED</span></div>
+      <div class="qu">${esc(s.unlock||'')}</div>`;
+    d.querySelector('.e').addEventListener('click',()=>openEditor(s.id));
+    d.querySelector('.x2').addEventListener('click',()=>{if(confirm('Удалить предмет «'+s.name+'»?')){SUBJECTS=SUBJECTS.filter(x=>x.id!==s.id);saveSubjects();renderAll();}});
+    g.appendChild(d);
+  });
+}
+
+function renderTasks(elId,arr,key){
+  const ul=$(elId);ul.innerHTML="";
+  arr.forEach((o,i)=>{
+    const li=document.createElement('li');li.className=o.done?'done':'';
+    li.innerHTML=`<input class="cb" type="checkbox" ${o.done?'checked':''}><span class="pill" contenteditable>${esc(o.tag)}</span><label contenteditable>${esc(o.text)}</label><span class="x">✕</span>`;
+    li.querySelector('input.cb').addEventListener('change',e=>{o.done=e.target.checked;li.classList.toggle('done',o.done);saveKey(key,arr);});
+    li.querySelector('.pill').addEventListener('blur',e=>{o.tag=e.target.textContent.trim();saveKey(key,arr);});
+    li.querySelector('label').addEventListener('blur',e=>{o.text=e.target.textContent.trim();saveKey(key,arr);});
+    li.querySelector('.x').addEventListener('click',()=>{arr.splice(i,1);saveKey(key,arr);renderTasks(elId,arr,key);});
+    ul.appendChild(li);
+  });
+}
+
+function renderWeek(){
+  const c=$('weekRows');c.innerHTML="";
+  WEEK.forEach((w,i)=>{
+    const row=document.createElement('div');row.className="week-row";
+    row.innerHTML=`<span class="d" contenteditable>${esc(w.d)}</span><span class="wt" contenteditable>${esc(w.t)}</span><span class="x">✕</span>`;
+    row.querySelector('.d').addEventListener('blur',e=>{w.d=e.target.textContent.trim();saveKey('study:week',WEEK);});
+    row.querySelector('.wt').addEventListener('blur',e=>{w.t=e.target.textContent.trim();saveKey('study:week',WEEK);});
+    row.querySelector('.x').addEventListener('click',()=>{WEEK.splice(i,1);saveKey('study:week',WEEK);renderWeek();});
+    c.appendChild(row);
+  });
+}
+
+function renderMetrics(){
+  const act=SUBJECTS.filter(s=>!s.queued);
+  const avg=act.length?Math.round(act.reduce((a,s)=>a+progressOf(s),0)/act.length):0;
+  $('m-ready').textContent=avg+"%";
+  const up=act.filter(s=>daysTo(s.exam)>=0).sort((a,b)=>new Date(a.exam)-new Date(b.exam))[0];
+  if(up){$('m-next').textContent=countdown(up.exam);$('m-next-l').textContent=(up.name.split(/[ —]/)[0]||'next').toLowerCase()+" exam";}
+  else $('m-next').textContent="—";
+  $('m-risk').textContent=act.filter(s=>["HIGH","CRITICAL"].includes(riskOf(s))).length;
+}
+
+function renderDates(){
+  $('today').textContent=now.toLocaleDateString('ru-RU',{weekday:'short',day:'2-digit',month:'long'}).toUpperCase();
+  const tom=new Date(now.getTime()+86400000);
+  $('t-date-today').textContent=now.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+  $('t-date-tom').textContent=tom.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+}
+
+function renderAll(){renderTable();renderQueued();renderMetrics();}
+
+let editingId=null;
+function taskRow(text){const div=document.createElement('div');div.className="taskedit";div.innerHTML=`<input type="text" value="${esc(text)}"><span class="x" style="opacity:1">✕</span>`;div.querySelector('.x').addEventListener('click',()=>div.remove());return div;}
+function openEditor(id){
+  editingId=id;const s=id?SUBJECTS.find(x=>x.id===id):null;
+  $('modalTitle').textContent=s?'Редактировать предмет':'Новый предмет';
+  $('f-name').value=s?s.name:"";
+  $('f-date').value=s?s.exam.slice(0,10):"";
+  $('f-time').value=s?s.exam.slice(11,16):"12:00";
+  $('f-type').value=s?s.type:"exam";
+  $('f-status').innerHTML=STATUSES.map(x=>`<option ${x===(s?s.status:"Not started")?'selected':''}>${x}</option>`).join('');
+  const base=s?s.base:0;$('f-base').value=base;$('f-base-v').textContent=base+"%";
+  $('f-next').value=s?s.next:"";
+  const tc=$('f-tasks');tc.innerHTML="";(s?s.tasks.map(t=>t.text):[""]).forEach(t=>tc.appendChild(taskRow(t)));
+  $('f-queued').checked=s?!!s.queued:false;
+  $('f-unlock').style.display=$('f-queued').checked?'block':'none';
+  $('f-unlock').value=s?(s.unlock||""):"";
+  $('f-delete').style.display=s?'inline-block':'none';
+  $('overlay').classList.add('show');
+}
+function closeEditor(){$('overlay').classList.remove('show');editingId=null;}
+$('f-base').addEventListener('input',e=>$('f-base-v').textContent=e.target.value+"%");
+$('f-queued').addEventListener('change',e=>$('f-unlock').style.display=e.target.checked?'block':'none');
+$('f-task-add').addEventListener('click',()=>$('f-tasks').appendChild(taskRow("")));
+$('f-cancel').addEventListener('click',closeEditor);
+$('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeEditor();});
+$('f-delete').addEventListener('click',()=>{if(editingId&&confirm('Удалить предмет?')){SUBJECTS=SUBJECTS.filter(x=>x.id!==editingId);saveSubjects();renderAll();closeEditor();}});
+$('f-save').addEventListener('click',()=>{
+  const name=$('f-name').value.trim();if(!name){$('f-name').focus();return;}
+  const exam=($('f-date').value||"2026-01-01")+"T"+($('f-time').value||"12:00");
+  const newTasks=[...$('f-tasks').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  const old=editingId?SUBJECTS.find(x=>x.id===editingId):null;
+  const tasks=newTasks.map(text=>{const prev=old&&old.tasks.find(t=>t.text===text);return{text,done:prev?prev.done:false};});
+  const obj={id:editingId||uid(),name,exam,type:$('f-type').value,base:+$('f-base').value,status:$('f-status').value,next:$('f-next').value.trim(),queued:$('f-queued').checked,unlock:$('f-unlock').value.trim(),tasks};
+  if(editingId){const idx=SUBJECTS.findIndex(x=>x.id===editingId);SUBJECTS[idx]=obj;}else SUBJECTS.push(obj);
+  saveSubjects();renderAll();closeEditor();
+});
+$('addSubject').addEventListener('click',()=>openEditor(null));
+
+$('today-add').addEventListener('click',()=>{TODAY.push({tag:"NEW",text:"новая задача",done:false});saveKey('study:today',TODAY);renderTasks('today-list',TODAY,'study:today');});
+$('tom-add').addEventListener('click',()=>{TOM.push({tag:"NEW",text:"новая задача",done:false});saveKey('study:tom',TOM);renderTasks('tom-list',TOM,'study:tom');});
+$('weekAdd').addEventListener('click',()=>{WEEK.push({d:"дата",t:"…"});saveKey('study:week',WEEK);renderWeek();});
+
+$('focusToday').addEventListener('blur',()=>{META.focusToday=$('focusToday').innerHTML;saveKey('study:meta',META);});
+$('title').addEventListener('blur',()=>{META.title=$('title').textContent;saveKey('study:meta',META);});
+$('subtitle').addEventListener('blur',()=>{META.subtitle=$('subtitle').textContent;saveKey('study:meta',META);});
+
+$('reset').addEventListener('click',async()=>{
+  if(!confirm('Сбросить ВСЁ к стартовому состоянию (предметы, задачи, прогресс)?'))return;
+  SUBJECTS=DEFAULTS.map(s=>({...s,tasks:s.tasks.map(t=>({text:t,done:false}))}));
+  TODAY=JSON.parse(JSON.stringify(DEFAULT_TODAY));TOM=JSON.parse(JSON.stringify(DEFAULT_TOM));WEEK=JSON.parse(JSON.stringify(DEFAULT_WEEK));META={focusToday:DEFAULT_FOCUS};
+  await Promise.all([saveSubjects(),saveKey('study:today',TODAY),saveKey('study:tom',TOM),saveKey('study:week',WEEK),saveKey('study:meta',META)]);
+  $('title').textContent="SESSION PREP";$('subtitle').textContent="экзаменационная сессия · июнь 2026";
+  hydrate();
+});
+$('exportBtn').addEventListener('click',()=>{
+  const data={subjects:SUBJECTS,today:TODAY,tom:TOM,week:WEEK,meta:META,focusToday:$('focusToday').innerHTML};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='session-prep.json';a.click();
+});
+
+function hydrate(){
+  $('focusToday').innerHTML=(META&&META.focusToday)||DEFAULT_FOCUS;
+  if(META&&META.title)$('title').textContent=META.title;
+  if(META&&META.subtitle)$('subtitle').textContent=META.subtitle;
+  renderDates();renderWeek();renderAll();
+  renderTasks('today-list',TODAY,'study:today');renderTasks('tom-list',TOM,'study:tom');
+}
+
+async function init(){
+  let stored=await loadKey('study:subjects',null);
+  if(stored)SUBJECTS=stored;
+  else{
+    const oldChecks=await loadKey('study:checks',{});
+    SUBJECTS=DEFAULTS.map(s=>({...s,tasks:s.tasks.map((t,i)=>({text:t,done:(oldChecks[s.id]&&oldChecks[s.id][i])||false}))}));
+    await saveSubjects();
+  }
+  TODAY=await loadKey('study:today',JSON.parse(JSON.stringify(DEFAULT_TODAY)));
+  TOM=await loadKey('study:tom',JSON.parse(JSON.stringify(DEFAULT_TOM)));
+  WEEK=await loadKey('study:week',JSON.parse(JSON.stringify(DEFAULT_WEEK)));
+  META=await loadKey('study:meta',{});
+  const f=await loadKey('study:focusToday',null);if(f&&!META.focusToday)META.focusToday=f;
+  hydrate();
+}
+init();
+</script>
